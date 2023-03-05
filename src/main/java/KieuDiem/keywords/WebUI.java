@@ -1,0 +1,228 @@
+package KieuDiem.keywords;
+
+import org.openqa.selenium.*;
+import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.support.ui.ExpectedCondition;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+
+import javax.swing.plaf.basic.BasicSliderUI;
+import java.time.Duration;
+import java.util.List;
+
+import static org.testng.Assert.fail;
+
+
+public class WebUI {
+
+    private static int EXPLICIT_WAIT_TIMEOUT = 10;
+    private static int WAIT_PAGE_LOADED_TIMEOUT = 30;
+
+    private static WebDriver driver;
+    public WebUI(WebDriver _driver){
+        driver = _driver;
+    }
+
+    public static void hoverOnElement(By by){
+        waitForElementVisible(by);
+        Actions action = new Actions(driver);
+        action.moveToElement(getWebElement(by));
+        logConsole("Hover on element: " + by);
+    }
+
+    public static WebElement highlightElement(By by){
+        waitForElementVisible(by);
+        //Tô màu border ngoài chính Element chỉ định - màu đỏ (có thể đổi màu khác)
+        if (driver instanceof JavascriptExecutor) {
+            ((JavascriptExecutor) driver).executeScript("arguments[0].style.border='3px solid red'", getWebElement(by));
+            sleep(1);
+        }
+        return getWebElement(by);
+    }
+
+    public static void rightClickElement(By by){
+        waitForElementVisible(by);
+        Actions action = new Actions(driver);
+        action.contextClick(getWebElement(by));
+        logConsole("Right click on element: " + by);
+    }
+
+    public static void sleep(double second) {
+        try {
+            Thread.sleep((long) (1000 * second));
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static WebElement getWebElement(By by){
+        return driver.findElement(by);
+    }
+
+    public static void logConsole(String message){
+        System.out.println(message);
+    }
+
+    public static void openURL(String URL){
+        driver.get(URL);
+        waitForPageLoaded();
+        logConsole("Open URL: " + URL);
+    }
+
+    public static String getCurrentURL(){
+        waitForPageLoaded();
+        logConsole("Get current URL: " + driver.getCurrentUrl());
+        return driver.getCurrentUrl();
+    }
+
+    public static void clickElement(By by){
+        waitForElementVisible(by);
+        highlightElement(by);
+        getWebElement(by).click();
+        logConsole("Click on element: " + by);
+    }
+
+    public static void setText(By by, String value){
+        waitForElementVisible(by);
+        getWebElement(by).sendKeys(value);
+        logConsole("Set text " + value + " on element " + by);
+    }
+
+    public static String getTextElement(By by){
+        waitForElementVisible(by);
+        logConsole("Get text of element " + by);
+        logConsole("==> Text: " + getWebElement(by).getText());
+        return getWebElement(by).getText();
+    }
+
+    public static String getAttributeElement(By by, String attributeName){
+        waitForElementVisible(by);
+        logConsole("Get attribute value of element " + by);
+        logConsole("==> Value: " + getWebElement(by).getAttribute(attributeName));
+        return getWebElement(by).getAttribute(attributeName);
+    }
+
+    public static void scrollToElementwithJS(By by){
+        waitForElementPresent(by);
+        //Dùng actions class
+
+        //Dùng JavascriptExecutor
+        JavascriptExecutor js = (JavascriptExecutor) driver;
+        js.executeScript("arguments[0].scrollIntoView(true);", getWebElement(by));
+        logConsole("Scroll to element: " + by);
+    }
+
+    public static void scrollToElementwithRobotClass(By by){
+        //Dùng robots class
+
+    }
+
+    public static void scrollToElement(By by){
+        //Dùng actions class
+
+    }
+
+
+    public static void waitForElementVisible(By by, int second) {
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(second), Duration.ofMillis(500));
+
+        wait.until(ExpectedConditions.visibilityOfElementLocated(by));
+    }
+    public static void waitForElementVisible(By by) {
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(EXPLICIT_WAIT_TIMEOUT), Duration.ofMillis(500));
+
+        wait.until(ExpectedConditions.visibilityOfElementLocated(by));
+    }
+
+    public static void waitForElementPresent(By by, int second) {
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(second));
+
+        wait.until(ExpectedConditions.presenceOfElementLocated(by));
+    }
+    public static void waitForElementPresent(By by) {
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(EXPLICIT_WAIT_TIMEOUT));
+
+        wait.until(ExpectedConditions.presenceOfElementLocated(by));
+    }
+
+    public static void waitForElementClickable(By by, int second) {
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(second), Duration.ofMillis(500));
+
+        wait.until(ExpectedConditions.elementToBeClickable(by));
+    }
+
+    public static boolean verifyElementVisible(By by, int second) {
+        try {
+            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(second), Duration.ofMillis(500));
+            wait.until(ExpectedConditions.visibilityOfElementLocated(by));
+            return true;
+        } catch (TimeoutException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public static boolean verifyElementNOTVisible(By by, int second) {
+        try {
+            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(second), Duration.ofMillis(500));
+            wait.until(ExpectedConditions.invisibilityOfElementLocated(by));
+            return true;
+        } catch (TimeoutException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public static boolean checkElementExist(By by){
+        List<WebElement> listElement = driver.findElements(by);
+
+        if (listElement.size() > 0){
+            System.out.println("Element"  + by + " existing.");
+            return true;
+        }else
+        {
+            System.out.println("Element" + by + " NOT Exist.");
+            return false;
+        }
+
+    }
+    public static boolean checkElementExist(String xpath){
+        List<WebElement> listElement = driver.findElements(By.xpath(xpath));
+
+        if (listElement.size() > 0){
+            System.out.println("Element"  + xpath + " existing.");
+            return true;
+        }else
+        {
+            System.out.println("Element" + xpath + " NOT Exist.");
+            return false;
+        }
+    }
+    public static void waitForPageLoaded() {
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(WAIT_PAGE_LOADED_TIMEOUT), Duration.ofMillis(500));
+        JavascriptExecutor js = (JavascriptExecutor) driver;
+
+        //Wait for Javascript to load
+        ExpectedCondition<Boolean> jsLoad = new ExpectedCondition<Boolean>() {
+            @Override
+            public Boolean apply(WebDriver driver) {
+                return js.executeScript("return document.readyState").toString().equals("complete");
+            }
+        };
+
+        //Check JS is Ready
+        boolean jsReady = js.executeScript("return document.readyState").toString().equals("complete");
+
+        //Wait Javascript until it is Ready!
+        if (!jsReady) {
+            System.out.println("Javascript is NOT Ready.");
+            //Wait for Javascript to load
+            try {
+                wait.until(jsLoad);
+            } catch (Throwable error) {
+                error.printStackTrace();
+                fail("FAILED. Timeout waiting for page load.");
+            }
+        }
+    }
+}
